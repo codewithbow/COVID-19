@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(ggplot2)
 library(readr)
+library(stringr)
 ```
 
 ```{r}
@@ -21,8 +22,8 @@ df
 
 ```{r}
 # investigate why NA is not populating in df
-df %>% filter(deaths == 'NA')
-df %>% filter(deaths == NA)
+#df %>% filter(deaths == 'NA')
+#df %>% filter(deaths == NA)
 ```
 
 ```{r}
@@ -41,13 +42,6 @@ df %>% group_by(sex) %>% count()
 ```
 
 ```{r}
-# remove observations of 'Transgender' because there's only one in the dataset and also remove 'Unknown'
-df <- df %>% filter(sex != "Transgender" & sex != "Unknown")
-df
-```
-
-
-```{r}
 # add 'month' and 'day' columns
 df$month <-as.numeric(substr(df$date, 6, 7))
 df$day <-as.numeric(substr(df$date, 9, 10))
@@ -55,13 +49,20 @@ df
 ```
 
 ```{r}
+# remove 
+# observations of 'Transgender' because there's only one in the dataset
+# observations of 'Unknown' because there's not much I can do with this info
+# observations of 'November' because there's only a few days for this month
+df <- df %>% filter(sex != "Transgender", sex != "Unknown", month != 11)
+
 # remove 'date' column
 df$date <- NULL
 
 # rename 'totalpositive2' column
 colnames(df)[names(df) == "totalpositive2"] <- "total_positive"
 
-df
+# arrange by 'month' ; this is important for when I use diff() for a diff column
+df %>% arrange(month)
 ```
 
 ### Explore the month of April
@@ -114,20 +115,54 @@ df
 ```{r}
 # plot first available month (April) of dataset
 ggplot(data = df %>% filter(month == 4), aes(x = day, y = total_positive, color = sex, group = sex)) +
-  geom_line()
+  geom_line() +
+  geom_point() +
+  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
+  theme_minimal()
 ```
 
 ```{r}
 # plot last available month (October) of dataset
 ggplot(data = df %>% filter(month == 10), aes(x = day, y = total_positive, color = sex, group = sex)) +
-  geom_line()
+  geom_line() +
+  geom_point() +
+  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
+  theme_minimal()
 ```
 
 ```{r}
-#View(df)
-str(df)
+#df$col1 <- str_replace_all(df$col1, fixed(" "), "")
+
+df$month.day <- as.numeric(str_replace_all(paste(as.character(df$month), ".", as.character(df$day)), fixed(" "), ""))
+
+females_df <- df %>% filter(sex == "Female")
+females_df
 ```
 
+
+```{r}
+# line for each month
+options(scipen = 5)
+ggplot(data = df %>% filter(sex == "Female"), 
+       aes(x = day, y = total_positive, color = as.factor(month), group = month)) +
+  geom_line() +
+  labs(title = "Trend of cases for each month", x = "Day of the Month", y = "Number of Positive Cases") +
+  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5)) + # legend.position = "none"
+  scale_colour_discrete("Month")
+```
+
+```{r}
+females_df$difference <- c(0, diff(females_df$total_positive))
+females_df
+```
+
+```{r}
+# fluctuation in numbers for females in the month of April
+ggplot(data = females_df %>% filter(month == 4), aes(x = day, y = difference)) +
+  geom_line()
+```
 
 
 
