@@ -1,0 +1,135 @@
+---
+title: "Untitled"
+author: "Bowie Lam"
+date: "11/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(readr)
+```
+
+```{r}
+df <- read.csv(file = "case_demographics_sex.csv", na.strings = c("", ".", "NA", " ", "None"))
+  #read_csv("case_demographics_sex.csv", na = c("", " "))
+  #read.csv(file ="case_demographics_sex.csv")
+df
+```
+
+```{r}
+# investigate why NA is not populating in df
+df %>% filter(deaths == 'NA')
+df %>% filter(deaths == NA)
+```
+
+```{r}
+# structure of dataset
+str(df)
+```
+
+```{r}
+# view the different factors of sex
+df$sex %>% unique()
+```
+
+```{r}
+# view count of each unique 'sex'
+df %>% group_by(sex) %>% count()
+```
+
+```{r}
+# remove observations of 'Transgender' because there's only one in the dataset and also remove 'Unknown'
+df <- df %>% filter(sex != "Transgender" & sex != "Unknown")
+df
+```
+
+
+```{r}
+# add 'month' and 'day' columns
+df$month <-as.numeric(substr(df$date, 6, 7))
+df$day <-as.numeric(substr(df$date, 9, 10))
+df
+```
+
+```{r}
+# remove 'date' column
+df$date <- NULL
+
+# rename 'totalpositive2' column
+colnames(df)[names(df) == "totalpositive2"] <- "total_positive"
+
+df
+```
+
+### Explore the month of April
+
+```{r}
+# show dataframe of month April only
+april <- df %>% filter(month == 4)
+april
+```
+
+```{r}
+# notice that there are duplicates in the dataset
+female_4 <- april %>% filter(sex == "Female")
+female_4
+```
+
+```{r}
+# create a function to remove duplicate rows
+remove_dup <- function(dataframe) {
+  return(dataframe[!duplicated(dataframe), ])
+}
+```
+
+```{r}
+female_4_cleaned <- remove_dup(female_4)
+female_4_cleaned
+```
+
+```{r}
+# function to double check for duplicates
+check_for_dups <- function(dataframe) {
+  len = dataframe %>% group_by(day) %>% count() %>% pull(n) %>% unique() %>% length()
+  if (len != 1) {
+    print("Oh, no! There are duplicates in this dataset! :( ")
+  } else {
+    print("Yay! There are no duplicates in this dataset! :) ")
+  }
+}
+
+check_for_dups(female_4)
+check_for_dups(female_4_cleaned)
+```
+
+```{r}
+# apply the remove_dup() function the entire dataset
+df <- remove_dup(df)
+df
+```
+
+```{r}
+# plot first available month (April) of dataset
+ggplot(data = df %>% filter(month == 4), aes(x = day, y = total_positive, color = sex, group = sex)) +
+  geom_line()
+```
+
+```{r}
+# plot last available month (October) of dataset
+ggplot(data = df %>% filter(month == 10), aes(x = day, y = total_positive, color = sex, group = sex)) +
+  geom_line()
+```
+
+```{r}
+#View(df)
+str(df)
+```
+
+
+
+
+
+
