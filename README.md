@@ -1,4 +1,5 @@
 # COVID-19
-Information to be included as the project progresses.
+
+Work in progress. Information to be included.
 
 Data source: California Open Data https://data.ca.gov/
