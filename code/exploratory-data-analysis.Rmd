@@ -1,8 +1,13 @@
 ---
-title: "Untitled"
-author: "Bowie Lam"
-date: "11/5/2020"
-output: html_document
+title: "EDA on COVID-19"
+author: "Bowie"
+date: "11/06/2020"
+output:
+  html_document:
+    df_print: paged
+  pdf_document:
+    keep_html: yes
+urlcolor: blue
 ---
 
 ```{r setup, include=FALSE}
@@ -264,6 +269,22 @@ max(df$difference)
 ```
 
 ### Some things to think about at this point:
+
+Shiny App
+
+- Plot for where user can view...
+  - the number of cases for a particular month between both sexes
+  - the trend of number of cases for all months for a particular sex
+  - the fluctuation (difference) of cases for a particular sex between 2+ months
+  - the fluctuation (difference) of cases for a particular month between both sexes
+  
+- Questions?
+  - How can I setup widgets, so that Widget A is the main widget and whatever choice the user makes results in specific available widgets?
+  
+Other
+
+  - Investigate why code is unable to populate empty cells with NA.
+
 
 
 
