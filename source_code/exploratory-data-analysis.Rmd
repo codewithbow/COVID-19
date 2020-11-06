@@ -1,0 +1,270 @@
+---
+title: "Untitled"
+author: "Bowie Lam"
+date: "11/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(readr)
+library(stringr)
+library(here)
+```
+
+```{r}
+here()
+```
+
+### Import data
+
+```{r}
+df <- read.csv(here("raw_data", "case_demographics_sex.csv"), na.strings = c("", ".", "NA", " ", "None"))
+
+df
+```
+
+### Explore data attributes
+
+```{r}
+# investigate why NA is not populating in df
+# df %>% filter(deaths == 'NA')
+# df %>% filter(deaths == NA)
+```
+
+```{r}
+# structure of dataset
+str(df)
+```
+
+```{r}
+# view the different factors of `sex`
+df$sex %>% unique()
+```
+
+```{r}
+# view count of each unique `sex`
+df %>% group_by(sex) %>% count()
+```
+
+### Basic manipulations to data
+
+```{r}
+# add 'month' column
+df$month <-as.numeric(substr(df$date, 6, 7))
+
+# add 'day' column
+df$day <-as.numeric(substr(df$date, 9, 10))
+
+df
+```
+
+```{r}
+# remove following characteristics: 
+# 'Transgender' and 'Unknown' from 'sex' column; 
+# 'November' from 'month' column
+df <- df %>% filter(sex != "Transgender", sex != "Unknown", month != 11)
+
+# remove 'date' column
+df$date <- NULL
+
+# rename 'totalpositive2' column
+colnames(df)[names(df) == "totalpositive2"] <- "total_positive"
+
+# arrange by 'day', then arrange by month (note: important for when diff() is used later on)
+df <- df %>% arrange(day) %>% arrange(month)
+
+df
+```
+
+### Explore a small chunk of the data to better understand it as a whole
+
+```{r}
+# show dataframe of 'month' 'April' only
+april <- df %>% filter(month == 4)
+
+april
+```
+
+```{r}
+# notice that there are duplicate rows in the 'april' dataframe e.g. where month = 4 and day = 10
+
+# create a function to remove duplicate rows
+remove_dup <- function(dataframe) {
+  return(dataframe[!duplicated(dataframe), ])
+}
+
+# create a function to double check for duplicates
+check_for_dups <- function(dataframe) {
+  len = dataframe %>% group_by(day) %>% count() %>% pull(n) %>% unique() %>% length()
+  if (len != 1) {
+    print("Oh, no! There are duplicates in this dataset! :( ")
+  } else {
+    print("Yay! There are no duplicates in this dataset! :) ")
+  }
+}
+```
+
+```{r}
+# test remove_dup() and check_for_dups()
+
+female_4 <- april %>% filter(sex == "Female")
+female_4_cleaned <- remove_dup(female_4)
+
+check_for_dups(female_4)
+check_for_dups(female_4_cleaned)
+```
+
+```{r}
+# apply remove_dup() to the entire dataset and reassign it
+df <- remove_dup(df)
+df
+```
+
+### Plot current `df` dataframe for observations
+
+```{r}
+# plot first available 'month' ('April') for both 'sex'
+ggplot(data = df %>% filter(month == 4), 
+       aes(x = day, y = total_positive, color = sex, group = sex)) +
+  geom_line() +
+  geom_point() +
+  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
+  theme_minimal()
+```
+
+```{r}
+# plot last available 'month' ('October') for both 'sex'
+ggplot(data = df %>% filter(month == 10), 
+       aes(x = day, y = total_positive, color = sex, group = sex)) +
+  geom_line() +
+  geom_point() +
+  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
+  theme_minimal()
+```
+
+### Create new column that combines `month` and `day`
+
+```{r}
+# add a 'month.day' column
+df$month.day <- 
+  as.numeric(str_replace_all(paste(as.character(df$month), ".", as.character(df$day)), fixed(" "), ""))
+
+df
+```
+
+### Given current state of `df` dataframe, analayze where `sex` is `Female`
+
+```{r}
+females_df <- df %>% filter(sex == "Female")
+females_df
+```
+
+```{r}
+# plot where each lines represents a 'month' for 'Female'
+options(scipen = 5)
+ggplot(data = females_df, 
+       aes(x = day, y = total_positive, color = as.factor(month), group = month)) +
+  geom_line() +
+  labs(title = "Trend of cases for each month", x = "Day of the Month", y = "Number of Positive Cases") +
+  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5)) + # legend.position = "none"
+  scale_colour_discrete("Month")
+```
+
+### Given current state of `df` dataframe, analayze where `sex` is `Male`
+
+```{r}
+males_df <- df %>% filter(sex == "Male")
+males_df
+```
+
+```{r}
+# plot where each lines represents a 'month' for 'Male'
+options(scipen = 5)
+ggplot(data = males_df, 
+       aes(x = day, y = total_positive, color = as.factor(month), group = month)) +
+  geom_line() +
+  labs(title = "Trend of cases for each month", x = "Day of the Month", y = "Number of Positive Cases") +
+  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5)) + # legend.position = "none"
+  scale_colour_discrete("Month")
+```
+
+### Use `diff()` function for all `sex` to find fluctuation in for all days
+
+##### I had to separate `df` into `females_df` and `males_df` because if I use `diff()` on `df` where the rows alternate between `Male` and `Female`, the `difference` column produced will be incorrect. Thus, in this section I separate the main dataframe by `sex`, compute `diff()` on each dataframe, then bind the two and reassign to the main dataframe, `df`.
+
+```{r}
+# add 'difference' column to `females_df` dataframe
+females_df$difference <- c(0, diff(females_df$total_positive))
+
+females_df
+```
+
+```{r}
+# plot `difference` in cases between days for each month for `Female`
+ggplot(data = females_df, 
+       aes(x = day, y = difference, color = as.factor(month), group = month)) +
+  geom_line() +
+  theme_minimal()
+```
+
+```{r}
+# add 'difference' column to `males_df` dataframe
+males_df$difference <- c(0, diff(males_df$total_positive))
+
+males_df
+```
+
+```{r}
+# plot `difference` in cases between days for each month for `Female`
+ggplot(data = males_df, 
+       aes(x = day, y = difference, color = as.factor(month), group = month)) +
+  geom_line() +
+  theme_minimal()
+```
+
+```{r}
+# combine `females_df` and `males_df` and reassign to `df` dataframe
+df <- rbind(females_df, males_df)
+
+df
+```
+
+```{r}
+# plot 'difference' for where 'month' is '4' (the first available month) between all 'sex' 
+ggplot(data = df %>% filter(month == 4), 
+       aes(x = day, y = difference, color = sex, group = sex)) +
+  geom_line() +
+  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
+  theme_minimal()
+```
+
+```{r}
+# plot 'difference' for where 'month' is '10' (the last available month) between all 'sex' 
+ggplot(data = df %>% filter(month == 10), 
+       aes(x = day, y = difference, color = sex, group = sex)) +
+  geom_line() +
+  geom_point() +
+  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
+  theme_minimal()
+```
+
+```{r}
+# min() of the 'difference' column
+min(df$difference)
+
+# max() of the 'difference' column
+max(df$difference)
+```
+
+### Some things to think about at this point:
+
+
+
+
