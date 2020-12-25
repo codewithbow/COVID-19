@@ -1,7 +1,7 @@
 ---
-title: "EDA on COVID-19"
-author: "Bowie"
-date: "11/06/2020"
+title: "California COVID-19 Sex Demographic Analysis"
+author: "Bowie Lam"
+date: "12/25/2020"
 output:
   html_document:
     df_print: paged
@@ -10,37 +10,46 @@ output:
 urlcolor: blue
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(dplyr)
+## Contents:
+
++ [Contents](#contents)
++ [Introduction](#introduction)
++ [Setting Up](#setting-up)
++ [Observing Imported Data](#observing-imported-data)
++ [Cleaning Data](#cleaning-data)
++ [Exploring Data](#exploring-data)
++ [Plotting Data](#plotting-data)
+
+## Introduction
+
+For this mini-project, I want to observe:
+
+1. the trend of COVID-19 cases overtime for the male and female sexes, and
+2. any discrepancies in cases between both sexes
+
+The below tasks are not intended to provide extensive knowledge into the subject matter, rather they simply showcase a glimpse into the general picture of the data. The observational texts that I provide for each task are meant to be rudimentary. I may conduct further research/analysis into this data set, but for now I merely intend to acquire a (very) brief look into the data.
+
+Thank you to [California Open Data](https://data.ca.gov/) for the data. The direct link to the particular data set used and its dictionary can be found [here](https://data.ca.gov/dataset/covid-19-cases).
+
+## Setting Up
+
+``` {r} 
+# load packages
 library(ggplot2)
-library(readr)
-library(stringr)
+library(dplyr, warn.conflicts = FALSE)
 library(here)
 ```
 
 ```{r}
-here()
-```
-
-### Import data
-
-```{r}
+# import data
 df <- read.csv(here("raw_data", "case_demographics_sex.csv"), na.strings = c("", ".", "NA", " ", "None"))
-
-df
+head(df)
 ```
 
-### Explore data attributes
+## Observing Imported Data
 
 ```{r}
-# investigate why NA is not populating in df
-# df %>% filter(deaths == 'NA')
-# df %>% filter(deaths == NA)
-```
-
-```{r}
-# structure of dataset
+# structure of data set
 str(df)
 ```
 
@@ -50,58 +59,76 @@ df$sex %>% unique()
 ```
 
 ```{r}
-# view count of each unique `sex`
+# view the count of each unique `sex`
 df %>% group_by(sex) %>% count()
 ```
 
-### Basic manipulations to data
+## Cleaning Data
 
 ```{r}
-# add 'month' column
+# add a 'month' column
 df$month <-as.numeric(substr(df$date, 6, 7))
 
-# add 'day' column
+# add a 'day' column
 df$day <-as.numeric(substr(df$date, 9, 10))
-
-df
 ```
 
 ```{r}
-# remove following characteristics: 
-# 'Transgender' and 'Unknown' from 'sex' column; 
-# 'November' from 'month' column
+# remove the following characteristics: 
+# 'Transgender' and 'Unknown' from the 'sex' column; 
+# 'November' from the 'month' column
 df <- df %>% filter(sex != "Transgender", sex != "Unknown", month != 11)
 
-# remove 'date' column
+# remove unneeded column
 df$date <- NULL
+df$case_percent <- NULL
+df$deaths <- NULL
+df$deaths_percent <- NULL
+df$ca_percent <- NULL
 
 # rename 'totalpositive2' column
 colnames(df)[names(df) == "totalpositive2"] <- "total_positive"
 
-# arrange by 'day', then arrange by month (note: important for when diff() is used later on)
+# arrange by 'day', then arrange by 'month' (note: important for when diff() is used later on)
 df <- df %>% arrange(day) %>% arrange(month)
 
-df
+head(df)
 ```
 
-### Explore a small chunk of the data to better understand it as a whole
+## Exploring Data 
+### (+ continuation of any necessary data cleansing/manipulations)
 
 ```{r}
-# show dataframe of 'month' 'April' only
+# explore a particular month of the data frame e.g. where 'month' is '4'
 april <- df %>% filter(month == 4)
 
 april
 ```
 
-```{r}
-# notice that there are duplicate rows in the 'april' dataframe e.g. where month = 4 and day = 10
+Notice that there are duplicate rows in the `april` data frame e.g. where month = 4 and day = 10. 
 
-# create a function to remove duplicate rows
+Create a function:
+
++ to remove duplicate rows
++ to double check for duplicates
+
+```{r}
+#' @title Duplicate Row Remover
+#' @description removes duplicated rows from a data frame
+#' @param dataframe is a table or two-dimensional array-like structure/object
+#' @return a data frame that no longer has duplicate rows
+
 remove_dup <- function(dataframe) {
   return(dataframe[!duplicated(dataframe), ])
 }
+```
 
-# create a function to double check for duplicates
+```{r}
+#' @title Duplicate Row Checker
+#' @description double checks that are no duplicate rows in the data frame
+#' @param dataframe is a table or two-dimensional array-like structure/object
+#' @return a character/string message indicating if there are any duplicates in the data frame
+
 check_for_dups <- function(dataframe) {
   len = dataframe %>% group_by(day) %>% count() %>% pull(n) %>% unique() %>% length()
   if (len != 1) {
@@ -112,180 +139,197 @@ check_for_dups <- function(dataframe) {
 }
 ```
 
-```{r}
-# test remove_dup() and check_for_dups()
+Test the function `remove_dup()`.
 
+```{r}
+# this data frame has duplicate rows
 female_4 <- april %>% filter(sex == "Female")
+
+# this data frame does not have duplicate rows
 female_4_cleaned <- remove_dup(female_4)
 
 check_for_dups(female_4)
 check_for_dups(female_4_cleaned)
 ```
 
+Remove duplicate rows from the entire `df` data frame using `remove_dup()`.
+
 ```{r}
-# apply remove_dup() to the entire dataset and reassign it
+# apply 'remove_dup()' to the data frame
 df <- remove_dup(df)
-df
+head(df)
 ```
 
-### Plot current `df` dataframe for observations
+## Plotting Data
+
+### Task 1
+
+**Task 1A:** Plot in one graph the total number of positive cases for the first available month in the data set for all sexes.
 
 ```{r}
-# plot first available 'month' ('April') for both 'sex'
+# first available 'month' is '4'
 ggplot(data = df %>% filter(month == 4), 
        aes(x = day, y = total_positive, color = sex, group = sex)) +
   geom_line() +
   geom_point() +
   scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
-  theme_minimal()
+  labs(title = "Trend of cases for the month of April", x = "Day of the Month", y = "Number of Positive Cases") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5))
 ```
 
+**Task 1B:** Plot in one graph the total number of positive cases for the last available month in the data set for all sexes.
+
 ```{r}
-# plot last available 'month' ('October') for both 'sex'
+# last available 'month' is '10'
 ggplot(data = df %>% filter(month == 10), 
        aes(x = day, y = total_positive, color = sex, group = sex)) +
   geom_line() +
   geom_point() +
   scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
-  theme_minimal()
+  labs(title = "Trend of cases for the month of October", x = "Day of the Month", y = "Number of Positive Cases") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5))
 ```
 
-### Create new column that combines `month` and `day`
+**Task 1 Observations:** Upon first look at both graphs, it's clear that there is a difference in the number of total cases between sexes when comparing the first month, April, to the last month, October. In Task 1A, the graph displays a similar increase in the number of positive cases between males and females; however, in October, that gap has widened to the point where it's more than obvious that females are testing positive more often than males.
+
+### Task 2
+
+**Task 2A:** Create a data frame for all sexes for individual analysis.
 
 ```{r}
-# add a 'month.day' column
-df$month.day <- 
-  as.numeric(str_replace_all(paste(as.character(df$month), ".", as.character(df$day)), fixed(" "), ""))
-
-df
-```
-
-### Given current state of `df` dataframe, analayze where `sex` is `Female`
-
-```{r}
+# data frame where 'sex' is 'Female'
 females_df <- df %>% filter(sex == "Female")
-females_df
-```
 
-```{r}
-# plot where each lines represents a 'month' for 'Female'
-options(scipen = 5)
-ggplot(data = females_df, 
-       aes(x = day, y = total_positive, color = as.factor(month), group = month)) +
-  geom_line() +
-  labs(title = "Trend of cases for each month", x = "Day of the Month", y = "Number of Positive Cases") +
-  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
-  theme_minimal() +
-  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5)) + # legend.position = "none"
-  scale_colour_discrete("Month")
-```
-
-### Given current state of `df` dataframe, analayze where `sex` is `Male`
-
-```{r}
+# data frame where 'sex' is 'Male'
 males_df <- df %>% filter(sex == "Male")
-males_df
 ```
 
+**Task 2B:** Plot in one graph the number of cases for each month for the female sex.
+
 ```{r}
-# plot where each lines represents a 'month' for 'Male'
+# displays the trend of cases for each month for 'Female'
+options(scipen = 5)
+ggplot(data = females_df, 
+       aes(x = day, y = total_positive, color = as.factor(month), group = month)) +
+  geom_line() +
+  labs(title = "Trend of cases for each month", subtitle = "for Females", x = "Day of the Month", y = "Number of Positive Cases") +
+  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5)) +
+  scale_colour_discrete("Month")
+```
+
+**Task 2C:** Plot in one graph the number of cases for each month for the male sex.
+
+```{r}
+# displays the trend of cases for each month for 'Male'
 options(scipen = 5)
 ggplot(data = males_df, 
        aes(x = day, y = total_positive, color = as.factor(month), group = month)) +
   geom_line() +
-  labs(title = "Trend of cases for each month", x = "Day of the Month", y = "Number of Positive Cases") +
+  labs(title = "Trend of cases for each month", subtitle = "for Males", x = "Day of the Month", y = "Number of Positive Cases") +
   scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
   theme_minimal() +
-  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5)) + # legend.position = "none"
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
+        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5)) +
   scale_colour_discrete("Month")
 ```
 
-### Use `diff()` function for all `sex` to find fluctuation in for all days
+**Task 2 Observations:** For both sexes, it appears they share similar trends in the number of positive cases for each month. Besides that, there is not much useful information that these two graphs can provide.
 
-##### I had to separate `df` into `females_df` and `males_df` because if I use `diff()` on `df` where the rows alternate between `Male` and `Female`, the `difference` column produced will be incorrect. Thus, in this section I separate the main dataframe by `sex`, compute `diff()` on each dataframe, then bind the two and reassign to the main dataframe, `df`.
+### Task 3
+
+**Task 3A:** Use the `diff()` function to find the difference in the number of cases from one day to the next.
+
+Note: I separated `df` into different sex data frames, `females_df` and `males_df`, because if `diff()` is used on `df` where the rows alternate between `Male` and `Female`, the `difference` column produced will be incorrect. Thus, in this section I:
+1. separate the main dataframe by `sex`
+2. compute `diff()` on each dataframe
+3. bind, using `rbind()`, the two data frames and reassign it to the main dataframe, `df`
 
 ```{r}
-# add 'difference' column to `females_df` dataframe
+# add a 'difference' column to `females_df` dataframe
 females_df$difference <- c(0, diff(females_df$total_positive))
-
 females_df
 ```
+
+```{r}
+# add a 'difference' column to `males_df` dataframe
+males_df$difference <- c(0, diff(males_df$total_positive))
+males_df
+```
+
+**Task 3B:** Plot in one graph the fluctuation in cases between days for each month for the female sex.
 
 ```{r}
 # plot `difference` in cases between days for each month for `Female`
 ggplot(data = females_df, 
        aes(x = day, y = difference, color = as.factor(month), group = month)) +
   geom_line() +
-  theme_minimal()
+  labs(title = "Fluctuations in Positive Cases On a Daily Basis", subtitle = "for Females", x = "Day of the Month", y = "Difference") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
+        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5)) +
+  scale_colour_discrete("Month")
 ```
 
-```{r}
-# add 'difference' column to `males_df` dataframe
-males_df$difference <- c(0, diff(males_df$total_positive))
-
-males_df
-```
+**Task 3C:** Plot in one graph the fluctuation in cases between days for each month for the male sex.
 
 ```{r}
-# plot `difference` in cases between days for each month for `Female`
+# plot `difference` in cases between days for each month for `Male`
 ggplot(data = males_df, 
        aes(x = day, y = difference, color = as.factor(month), group = month)) +
   geom_line() +
-  theme_minimal()
+  labs(title = "Fluctuations in Positive Cases On a Daily Basis", subtitle = "for Males", x = "Day of the Month", y = "Difference") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
+        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5)) +
+  scale_colour_discrete("Month")
 ```
+
+**Task 3 Observations:** In both graphs for females and males, the months of July and August appear to containing the highest differences among all months. This may indicate a summer spike where people quarantined less than when the pandemic first started in the earlier months. This could be due to many reasons, such as adaptation to the new norm, thus resulting in people taking the pandemic less seriously.
+
+### Task 4
+
+**Task 4A:** Combine `females_df` and `males_df` into `df`.
 
 ```{r}
 # combine `females_df` and `males_df` and reassign to `df` dataframe
 df <- rbind(females_df, males_df)
-
-df
 ```
 
+**Task 4B:** Plot in one graph the difference in the number of cases for the first available month in the data set for all sexes.
+
 ```{r}
-# plot 'difference' for where 'month' is '4' (the first available month) between all 'sex' 
+# first available 'month' is '4'
 ggplot(data = df %>% filter(month == 4), 
        aes(x = day, y = difference, color = sex, group = sex)) +
   geom_line() +
+  geom_point() +
+  labs(title = "Fluctuations in Positive Cases On a Daily Basis", subtitle = "in the month of April", x = "Day of the Month", y = "Difference") +
   scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
+        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5))
 ```
 
+**Task 4C:** Plot in one graph the difference in the number of cases for the last available month in the data set for all sexes.
+
 ```{r}
-# plot 'difference' for where 'month' is '10' (the last available month) between all 'sex' 
+# last available 'month' is '10'
 ggplot(data = df %>% filter(month == 10), 
        aes(x = day, y = difference, color = sex, group = sex)) +
   geom_line() +
   geom_point() +
+  labs(title = "Fluctuations in Positive Cases On a Daily Basis", subtitle = "in the month of April", x = "Day of the Month", y = "Difference") +
   scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
-  theme_minimal()
+  theme_minimal() +
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
+        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5))
 ```
 
-```{r}
-# min() of the 'difference' column
-min(df$difference)
-
-# max() of the 'difference' column
-max(df$difference)
-```
-
-### Some things to think about at this point:
-
-Shiny App
-
-- Plot for where user can view...
-  - the number of cases for a particular month between both sexes
-  - the trend of number of cases for all months for a particular sex
-  - the fluctuation (difference) of cases for a particular sex between 2+ months
-  - the fluctuation (difference) of cases for a particular month between both sexes
-  
-- Questions?
-  - How can I setup widgets, so that Widget A is the main widget and whatever choice the user makes results in specific available widgets?
-  
-Other
-
-  - Investigate why code is unable to populate empty cells with NA.
-
-
-
+**Task 4 Observations:** Although there are some instances where one sex had a larger difference than the other, both experienced very similar fluctuations in positive cases, whether that be in April or October. However, it does appear that female have larger differences than males more often. Similar to Task 3, this may indicate a larger problem in society that's resulting in the disproportionatlity.
 
 
