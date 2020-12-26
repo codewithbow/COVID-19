@@ -325,7 +325,7 @@ ggplot(data = df %>% filter(month == 10),
   theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5))
 ```
 
-![](exploratory-data-analysis_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](https://github.com/codewithbow/COVID-19/blob/main/images/task1b.png)<!-- -->
 
 **Task 1 Observations:** Upon first look at both graphs, it’s clear that
 there is a difference in the number of total cases between sexes when
@@ -364,7 +364,7 @@ ggplot(data = females_df,
   scale_colour_discrete("Month")
 ```
 
-![](exploratory-data-analysis_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](https://github.com/codewithbow/COVID-19/blob/main/images/task2b.png)<!-- -->
 
 **Task 2C:** Plot in one graph the number of cases for each month for
 the male sex.
@@ -383,7 +383,7 @@ ggplot(data = males_df,
   scale_colour_discrete("Month")
 ```
 
-![](exploratory-data-analysis_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](https://github.com/codewithbow/COVID-19/blob/main/images/task2c.png)<!-- -->
 
 **Task 2 Observations:** For both sexes, it appears they share similar
 trends in the number of positive cases for each month. Besides that,
@@ -444,7 +444,7 @@ ggplot(data = females_df,
   scale_colour_discrete("Month")
 ```
 
-![](exploratory-data-analysis_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](https://github.com/codewithbow/COVID-19/blob/main/images/task3b.png)<!-- -->
 
 **Task 3C:** Plot in one graph the fluctuation in cases between days for
 each month for the male sex.
@@ -461,7 +461,7 @@ ggplot(data = males_df,
   scale_colour_discrete("Month")
 ```
 
-![](exploratory-data-analysis_files/figure-gfm/unnamed-chunk-21-1.png)<!-- -->
+![](https://github.com/codewithbow/COVID-19/blob/main/images/task3c.png)<!-- -->
 
 **Task 3 Observations:** In both graphs for females and males, the
 months of July and August appear to containing the highest differences
@@ -495,7 +495,7 @@ ggplot(data = df %>% filter(month == 4),
         plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5))
 ```
 
-![](exploratory-data-analysis_files/figure-gfm/unnamed-chunk-23-1.png)<!-- -->
+![](https://github.com/codewithbow/COVID-19/blob/main/images/task4b.png)<!-- -->
 
 **Task 4C:** Plot in one graph the difference in the number of cases for
 the last available month in the data set for all sexes.
@@ -513,7 +513,7 @@ ggplot(data = df %>% filter(month == 10),
         plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5))
 ```
 
-![](exploratory-data-analysis_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](https://github.com/codewithbow/COVID-19/blob/main/images/task4c.png)<!-- -->
 
 **Task 4 Observations:** Although there are some instances where one sex
 had a larger difference than the other, both experienced very similar
