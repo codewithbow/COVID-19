@@ -2,7 +2,7 @@
 title: "California COVID-19 Sex Demographic Analysis"
 author: "Bowie Lam"
 date: "12/25/2020"
-output: rmarkdown::github_document
+output: html_document
 urlcolor: blue
 ---
 
