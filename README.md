@@ -15,11 +15,12 @@ Bowie Lam
 
 ## Introduction
 
-For this mini-project, I want to observe:
+For this ultra-mini project, I want to:
 
-1.  the trend of COVID-19 cases overtime for the male and female sexes,
+1. practice data cleansing and other manipulations,
+2. observe the trend of COVID-19 cases overtime for the male and female sexes,
     and
-2.  any discrepancies in cases between both sexes
+3. observe any discrepancies in cases between both sexes
 
 The below tasks are not intended to provide extensive knowledge into the
 subject matter, rather they simply showcase a glimpse into the general
