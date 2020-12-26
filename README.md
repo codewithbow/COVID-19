@@ -308,7 +308,7 @@ ggplot(data = df %>% filter(month == 4),
   theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5))
 ```
 
-![](exploratory-data-analysis_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](https://github.com/codewithbow/COVID-19/blob/main/images/task1a.png)<!-- -->
 
 **Task 1B:** Plot in one graph the total number of positive cases for
 the last available month in the data set for all sexes.
