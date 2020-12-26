@@ -2,9 +2,7 @@
 title: "California COVID-19 Sex Demographic Analysis"
 author: "Bowie Lam"
 date: "12/25/2020"
-output: 
-  html_document:
-    keep_md: true
+output: rmarkdown::github_document
 urlcolor: blue
 ---
 
@@ -250,13 +248,13 @@ Note: I separated `df` into different sex data frames, `females_df` and `males_d
 ```{r}
 # add a 'difference' column to `females_df` dataframe
 females_df$difference <- c(0, diff(females_df$total_positive))
-females_df
+head(females_df)
 ```
 
 ```{r}
 # add a 'difference' column to `males_df` dataframe
 males_df$difference <- c(0, diff(males_df$total_positive))
-males_df
+head(males_df)
 ```
 
 **Task 3B:** Plot in one graph the fluctuation in cases between days for each month for the female sex.
