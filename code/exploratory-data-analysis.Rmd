@@ -33,12 +33,15 @@ Thank you to [California Open Data](https://data.ca.gov/) for the data. The dire
 # load packages
 library(ggplot2)
 library(dplyr, warn.conflicts = FALSE)
+library(readr)
+library(bookdown)
 library(here)
 ```
 
 ```{r}
 # import data
-df <- read.csv(here("raw_data", "case_demographics_sex.csv"), na.strings = c("", ".", "NA", " ", "None"))
+df <- read.csv(here("raw_data", "case_demographics_sex.csv"), 
+               na.strings = c("", ".", "NA", " ", "None"))
 head(df)
 ```
 
@@ -158,34 +161,75 @@ head(df)
 
 ## Plotting Data
 
+```{r}
+#' @title Case Plotter
+#' @description used to produce a plot with a changing y-variable
+#' @param table a two-dimensional array-like structure
+#' @param month_num is if type int, and is the number of the specified month
+#' @param y_variable is of type chr, and is the variable to be plotted on the y-axis
+#' @param main_title is of type chr, and is the primary title of the plot
+#' @param sub_title is of type chr, and is the secondary title of the plot
+#' @param y_title is of type chr, and is the title of the y-axis
+#' @return a dotted line plot
+
+plotting <- function(table, month_num, y_variable, main_title, sub_title, y_title) {
+  ggplot(data = table %>% filter(month == month_num), 
+       aes_string(x = "day", y = y_variable, color = "sex", group = "sex")) +
+  geom_line() + geom_point() +
+  scale_x_continuous(breaks = seq(min(table$day), max(table$day), 2)) +
+  labs(title = main_title, subtitle = sub_title, x = "Day of the Month", 
+       y = y_title, caption = "Data Source: California Open Data") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
+        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5))
+}
+```
+
+```{r}
+#' @title Facet Plotter
+#' @description used to produce multiple plots faceted by a specified variable
+#' @param table two-dimensional array-like structure
+#' @param y_variable is of type chr, and is the variable to be plotted on the y-axis
+#' @param main_title is of type chr, and is the primary title of the plot
+#' @param sub_title is of type chr, and is the secondary title of the plot
+#' @param y_title is of type chr, and is the title of the y-axis
+#' @return a plot that consists of multiple line plots
+
+facet_plotting <- function(table, y_variable, main_title, sub_title, y_title) {
+  ggplot(data = table, 
+         aes_string(x = "day", y = y_variable, color = "sex", group = "sex")) +
+  geom_line() + facet_wrap(~ month) +
+  labs(title = main_title, subtitle = sub_title, x = "Day of the Month", 
+       y = y_title, caption = "Data Source: California Open Data") +
+  theme_light() +
+  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
+        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5))
+}
+```
+
 ### Task 1
 
 **Task 1A:** Plot in one graph the total number of positive cases for the first available month in the data set for all sexes.
 
-```{r}
-# first available 'month' is '4'
-ggplot(data = df %>% filter(month == 4), 
-       aes(x = day, y = total_positive, color = sex, group = sex)) +
-  geom_line() +
-  geom_point() +
-  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
-  labs(title = "Trend of cases for the month of April", x = "Day of the Month", y = "Number of Positive Cases") +
-  theme_minimal() +
-  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5))
+```{r, fig.align = "center"}
+# plot the trend of positive cases in the first month, April, for both sexes
+plotting(df, 4, "total_positive", "Positive Case Trends", "in the month of April", 
+         "Number of positive cases")
 ```
 
 **Task 1B:** Plot in one graph the total number of positive cases for the last available month in the data set for all sexes.
 
-```{r}
-# last available 'month' is '10'
-ggplot(data = df %>% filter(month == 10), 
-       aes(x = day, y = total_positive, color = sex, group = sex)) +
-  geom_line() +
-  geom_point() +
-  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
-  labs(title = "Trend of cases for the month of October", x = "Day of the Month", y = "Number of Positive Cases") +
-  theme_minimal() +
-  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5))
+```{r, fig.align = "center"}
+# plot the trend of positive cases in the last month, October, for both sexes
+plotting(df, 10, "total_positive", "Positive Case Trends", "in the month of October", 
+         "Number of positive cases")
+```
+
+```{r, fig.align = "center"}
+# plot the trend of positive cases in all months, April to October, for both sexes
+options(scipen = 999)
+facet_plotting(df, "total_positive", "Positive Case Trends", "from April to October", 
+               "Number of Positive Cases")
 ```
 
 **Task 1 Observations:** Upon first look at both graphs, it's clear that there is a difference in the number of total cases between sexes when comparing the first month, April, to the last month, October. In Task 1A, the graph displays a similar increase in the number of positive cases between males and females; however, in October, that gap has widened to the point where it's more than obvious that females are testing positive more often than males.
@@ -298,32 +342,24 @@ df <- rbind(females_df, males_df)
 
 **Task 4B:** Plot in one graph the difference in the number of cases for the first available month in the data set for all sexes.
 
-```{r}
-# first available 'month' is '4'
-ggplot(data = df %>% filter(month == 4), 
-       aes(x = day, y = difference, color = sex, group = sex)) +
-  geom_line() +
-  geom_point() +
-  labs(title = "Fluctuations in Positive Cases On a Daily Basis", subtitle = "in the month of April", x = "Day of the Month", y = "Difference") +
-  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
-  theme_minimal() +
-  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
-        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5))
+```{r, fig.align = "center"}
+# plot the difference in positive cases in the first month, April, for both sexes
+plotting(df, 4, "difference", "Daily Fluctuations in Positive Cases", 
+         "in the month of April", "Difference")
 ```
 
 **Task 4C:** Plot in one graph the difference in the number of cases for the last available month in the data set for all sexes.
 
-```{r}
-# last available 'month' is '10'
-ggplot(data = df %>% filter(month == 10), 
-       aes(x = day, y = difference, color = sex, group = sex)) +
-  geom_line() +
-  geom_point() +
-  labs(title = "Fluctuations in Positive Cases On a Daily Basis", subtitle = "in the month of April", x = "Day of the Month", y = "Difference") +
-  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
-  theme_minimal() +
-  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
-        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5))
+```{r, fig.align = "center"}
+# plot the difference in positive cases in the last month, October, for both sexes
+plotting(df, 10, "difference", "Daily Fluctuations in Positive Cases", 
+         "in the month of October", "Difference")
+```
+
+```{r, fig.align = "center"}
+# plot the difference in positive cases in all months, April to October, for both sexes
+facet_plotting(df, "difference", "Daily Fluctuations in Positive Cases", 
+               "from April to October", "Difference")
 ```
 
 **Task 4 Observations:** Although there are some instances where one sex had a larger difference than the other, both experienced very similar fluctuations in positive cases, whether that be in April or October. However, it does appear that female have larger differences than males more often. Similar to Task 3, this may indicate a larger problem in society that's resulting in the disproportionatlity.
