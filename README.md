@@ -307,7 +307,7 @@ plotting(df, 4, "total_positive", "Positive Case Trends", "in the month of April
          "Number of positive cases")
 ```
 
-<img src="covid-analysis_files/figure-gfm/unnamed-chunk-12-1.png" style="display: block; margin: auto;" />
+<img src="images/figure-gfm/unnamed-chunk-12-1.png" style="display: block; margin: auto;" />
 
 ##### **Plot 1B**
 
@@ -317,7 +317,7 @@ plotting(df, 10, "total_positive", "Positive Case Trends", "in the month of Octo
          "Number of positive cases")
 ```
 
-<img src="covid-analysis_files/figure-gfm/unnamed-chunk-13-1.png" style="display: block; margin: auto;" />
+<img src="images/figure-gfm/unnamed-chunk-13-1.png" style="display: block; margin: auto;" />
 
 ##### **Plot 1C**
 
@@ -328,7 +328,7 @@ facet_plotting(df, "total_positive", "Positive Case Trends", "from April to Octo
                "Number of Positive Cases")
 ```
 
-<img src="covid-analysis_files/figure-gfm/unnamed-chunk-14-1.png" style="display: block; margin: auto;" />
+<img src="images/figure-gfm/unnamed-chunk-14-1.png" style="display: block; margin: auto;" />
 
 #### Task 2: Daily Fluctuations in Positive Cases
 
@@ -366,7 +366,7 @@ plotting(df, 4, "difference", "Daily Fluctuations in Positive Cases",
          "in the month of April", "Difference")
 ```
 
-<img src="covid-analysis_files/figure-gfm/unnamed-chunk-16-1.png" style="display: block; margin: auto;" />
+<img src="images/figure-gfm/unnamed-chunk-16-1.png" style="display: block; margin: auto;" />
 
 ##### **Plot 2B**
 
@@ -376,7 +376,7 @@ plotting(df, 10, "difference", "Daily Fluctuations in Positive Cases",
          "in the month of October", "Difference")
 ```
 
-<img src="covid-analysis_files/figure-gfm/unnamed-chunk-17-1.png" style="display: block; margin: auto;" />
+<img src="images/figure-gfm/unnamed-chunk-17-1.png" style="display: block; margin: auto;" />
 
 ##### **Plot 2C**
 
@@ -386,4 +386,4 @@ facet_plotting(df, "difference", "Daily Fluctuations in Positive Cases",
                "from April to October", "Difference")
 ```
 
-<img src="covid-analysis_files/figure-gfm/unnamed-chunk-18-1.png" style="display: block; margin: auto;" />
+<img src="images/figure-gfm/unnamed-chunk-18-1.png" style="display: block; margin: auto;" />
