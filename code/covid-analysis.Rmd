@@ -6,7 +6,7 @@ output: github_document
 urlcolor: blue
 ---
 
-## Contents:
+## Contents
 
 + [Contents](#contents)
 + [Introduction](#introduction)

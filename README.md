@@ -3,7 +3,7 @@ California COVID-19 Sex Demographic Analysis
 Bowie Lam
 12/25/2020
 
-## Contents:
+## Contents
 
   - [Contents](#contents)
   - [Introduction](#introduction)
