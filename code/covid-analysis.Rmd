@@ -2,7 +2,7 @@
 title: "California COVID-19 Sex Demographic Analysis"
 author: "Bowie Lam"
 date: "12/25/2020"
-output: html_document
+output: github_document
 urlcolor: blue
 ---
 
@@ -11,19 +11,18 @@ urlcolor: blue
 + [Contents](#contents)
 + [Introduction](#introduction)
 + [Setting Up](#setting-up)
-+ [Observing Imported Data](#observing-imported-data)
 + [Cleaning Data](#cleaning-data)
-+ [Exploring Data](#exploring-data)
 + [Plotting Data](#plotting-data)
 
 ## Introduction
 
-For this mini-project, I want to observe:
+For this ultra-mini project, I want to:
 
-1. the trend of COVID-19 cases overtime for the male and female sexes, and
-2. any discrepancies in cases between both sexes
+1. observe the trend of COVID-19 cases overtime for the male and female sexes,
+2. discover any discrepancies in cases between both sexes, and
+3. practice cleaning, graphing, and analyzing data
 
-The below tasks are not intended to provide extensive knowledge into the subject matter, rather they simply showcase a glimpse into the general picture of the data. The observational texts that I provide for each task are meant to be rudimentary. I may conduct further research/analysis into this data set, but for now I merely intend to acquire a (very) brief look into the data.
+The below tasks are not intended to provide extensive knowledge into the subject matter, rather they simply showcase a glimpse into the general picture of the data; the observations provided for each task are meant to be rudimentary. All in all, this exercise is done for fun and to gain some new knowledge.
 
 Thank you to [California Open Data](https://data.ca.gov/) for the data. The direct link to the particular data set used and its dictionary can be found [here](https://data.ca.gov/dataset/covid-19-cases).
 
@@ -40,24 +39,8 @@ library(here)
 
 ```{r}
 # import data
-df <- read.csv(here("raw_data", "case_demographics_sex.csv"), na.strings = c("", ".", "NA", " "))
-```
-
-## Observing Imported Data
-
-```{r}
-# structure of data set
-str(df)
-```
-
-```{r}
-# view the different factors of `sex`
-df$sex %>% unique()
-```
-
-```{r}
-# view the count of each unique `sex`
-df %>% group_by(sex) %>% count()
+df <- read.csv(here("raw_data", "case_demographics_sex.csv"), 
+               na.strings = c("", ".", "NA", " ", "None"))
 ```
 
 ## Cleaning Data
@@ -90,9 +73,6 @@ colnames(df)[names(df) == "totalpositive2"] <- "total_positive"
 df <- df %>% arrange(day) %>% arrange(month)
 ```
 
-## Exploring Data 
-### (+ continuation of any necessary data cleansing/manipulations)
-
 ```{r}
 # explore a particular month of the data frame e.g. where 'month' is '4'
 april <- df %>% filter(month == 4)
@@ -122,7 +102,7 @@ remove_dup <- function(dataframe) {
 #' @title Duplicate Row Checker
 #' @description double checks that are no duplicate rows in the data frame
 #' @param dataframe is a table or two-dimensional array-like structure/object
-#' @return a character/string message indicating if there are any duplicates in the data frame
+#' @return a character message indicating if there are any duplicates in the data
 
 check_for_dups <- function(dataframe) {
   len = dataframe %>% group_by(day) %>% count() %>% pull(n) %>% unique() %>% length()
@@ -155,6 +135,8 @@ df <- remove_dup(df)
 ```
 
 ## Plotting Data
+
+### Functions
 
 ```{r}
 #' @title Case Plotter
@@ -202,9 +184,21 @@ facet_plotting <- function(table, y_variable, main_title, sub_title, y_title) {
 }
 ```
 
-### Task 1
+### Graphs and Analysis
 
-**Task 1A:** Plot in one graph the total number of positive cases for the first available month in the data set for all sexes.
+After cleaning the data and creating the required plotting functions, we are now ready to use the processed information to answer some meaningful questions. For this section, I will aim to answer the following: **Is there a gender difference in the people who test positive for COVID-19 in California?**
+
+This research question is of interest because it's crucial to discern if there are particular groups in society who are more susceptible to the infectious disease when compared to their counterparts. These groups can be identified on the basis of race, color, religion, gender, age, disability, etc. If such disadvantaged groups exist, efforts should be made by government officials, public health professionals, and the alike to devise solutions to the inequity.
+
+#### Task 1: Positive Case Trends
+
+Upon first look at Plot 1A and Plot 1B, it's clear that there is a difference in the number of total positive cases between sexes when comparing the first month, April, to the last month, October. In Plot 1A, the graph displays a similar increase in the number of positive cases between males and females; however, in October, the gap drastically widened at a consistent rate. It's evident that females are testing positive more often than males. This observation suggests that females are disproportionately affected by COVID-19 than their male counterparts. One of many explanations for this could be the difference in occupations between the sexes. Perhaps females tend to be in roles that have a higher risk of exposure to COVID-19 than the roles of males.
+
+The difference in positive case trends for all months is displayed in Plot 1C. For the first four months, April to July, both sexes appear to experience a similar increase. However, beginning in August it's clear that females began to gradually surpass males in the total number of positive cases.
+
+\newpage
+
+##### **Plot 1A**
 
 ```{r, fig.align = "center"}
 # plot the trend of positive cases in the first month, April, for both sexes
@@ -212,13 +206,19 @@ plotting(df, 4, "total_positive", "Positive Case Trends", "in the month of April
          "Number of positive cases")
 ```
 
-**Task 1B:** Plot in one graph the total number of positive cases for the last available month in the data set for all sexes.
+\newpage
+
+##### **Plot 1B**
 
 ```{r, fig.align = "center"}
 # plot the trend of positive cases in the last month, October, for both sexes
 plotting(df, 10, "total_positive", "Positive Case Trends", "in the month of October", 
          "Number of positive cases")
 ```
+
+\newpage
+
+##### **Plot 1C**
 
 ```{r, fig.align = "center"}
 # plot the trend of positive cases in all months, April to October, for both sexes
@@ -227,113 +227,30 @@ facet_plotting(df, "total_positive", "Positive Case Trends", "from April to Octo
                "Number of Positive Cases")
 ```
 
-**Task 1 Observations:** Upon first look at both graphs, it's clear that there is a difference in the number of total cases between sexes when comparing the first month, April, to the last month, October. In Task 1A, the graph displays a similar increase in the number of positive cases between males and females; however, in October, that gap has widened to the point where it's more than obvious that females are testing positive more often than males.
+\newpage
 
-### Task 2
+#### Task 2: Daily Fluctuations in Positive Cases
 
-**Task 2A:** Create a data frame for all sexes for individual analysis.
+From Task 1 above, it was observed that there are more positive cases among females than there are among males. In this task, a closer look at daily fluctuations in positive cases is made. In both Plot 2A and Plot 2B, both sexes again display a similar trend in positive cases. In the first month, April, both sexes experienced nearly the same number of peaks in daily positive cases. However, in the last month, October, females undoubtedly peaked more than males.
+
+The difference in daily fluctuations in positive cases for all months, April to October, is showcased in Plot 2C. Although the data shows a similar pattern in movement between both sexes, females are affected more than males, which can be discerned by the peaks in daily cases.
 
 ```{r}
 # create a dataframe where `sex` is `Female` and `Male`
 females_df <- df %>% filter(sex == "Female")
 males_df <- df %>% filter(sex == "Male")
-```
 
-**Task 2B:** Plot in one graph the number of cases for each month for the female sex.
-
-```{r}
-# displays the trend of cases for each month for 'Female'
-options(scipen = 5)
-ggplot(data = females_df, 
-       aes(x = day, y = total_positive, color = as.factor(month), group = month)) +
-  geom_line() +
-  labs(title = "Trend of cases for each month", subtitle = "for Females", x = "Day of the Month", y = "Number of Positive Cases") +
-  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
-  theme_minimal() +
-  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5),
-        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5)) +
-  scale_colour_discrete("Month")
-```
-
-**Task 2C:** Plot in one graph the number of cases for each month for the male sex.
-
-```{r}
-# displays the trend of cases for each month for 'Male'
-options(scipen = 5)
-ggplot(data = males_df, 
-       aes(x = day, y = total_positive, color = as.factor(month), group = month)) +
-  geom_line() +
-  labs(title = "Trend of cases for each month", subtitle = "for Males", x = "Day of the Month", y = "Number of Positive Cases") +
-  scale_x_continuous(breaks = seq(min(df$day), max(df$day), 2)) +
-  theme_minimal() +
-  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
-        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5)) +
-  scale_colour_discrete("Month")
-```
-
-**Task 2 Observations:** For both sexes, it appears they share similar trends in the number of positive cases for each month. Besides that, there is not much useful information that these two graphs can provide.
-
-### Task 3
-
-**Task 3A:** Use the `diff()` function to find the difference in the number of cases from one day to the next.
-
-Note: I separated `df` into different sex data frames, `females_df` and `males_df`, because if `diff()` is used on `df` where the rows alternate between `Male` and `Female`, the `difference` column produced will be incorrect. Thus, in this section I:
-1. separate the main dataframe by `sex`
-2. compute `diff()` on each dataframe
-3. bind, using `rbind()`, the two data frames and reassign it to the main dataframe, `df`
-
-```{r}
-# add a 'difference' column to `females_df` dataframe
+# add a 'difference' column to `females_df` and `males_df`
 females_df$difference <- c(0, diff(females_df$total_positive))
-head(females_df)
-```
-
-```{r}
-# add a 'difference' column to `males_df` dataframe
 males_df$difference <- c(0, diff(males_df$total_positive))
-head(males_df)
-```
 
-**Task 3B:** Plot in one graph the fluctuation in cases between days for each month for the female sex.
-
-```{r}
-# plot `difference` in cases between days for each month for `Female`
-ggplot(data = females_df, 
-       aes(x = day, y = difference, color = as.factor(month), group = month)) +
-  geom_line() +
-  labs(title = "Fluctuations in Positive Cases On a Daily Basis", subtitle = "for Females", x = "Day of the Month", y = "Difference") +
-  theme_minimal() +
-  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
-        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5)) +
-  scale_colour_discrete("Month")
-```
-
-**Task 3C:** Plot in one graph the fluctuation in cases between days for each month for the male sex.
-
-```{r}
-# plot `difference` in cases between days for each month for `Male`
-ggplot(data = males_df, 
-       aes(x = day, y = difference, color = as.factor(month), group = month)) +
-  geom_line() +
-  labs(title = "Fluctuations in Positive Cases On a Daily Basis", subtitle = "for Males", x = "Day of the Month", y = "Difference") +
-  theme_minimal() +
-  theme(plot.title = element_text(size = 15, face = "bold", hjust = 0.5), 
-        plot.subtitle = element_text(size = 12, face = "bold", hjust = 0.5)) +
-  scale_colour_discrete("Month")
-```
-
-**Task 3 Observations:** In both graphs for females and males, the months of July and August appear to containing the highest differences among all months. This may indicate a summer spike where people quarantined less than when the pandemic first started in the earlier months. This could be due to many reasons, such as adaptation to the new norm, thus resulting in people taking the pandemic less seriously.
-
-### Task 4
-
-**Task 4A:** Combine `females_df` and `males_df` into `df`.
-
-```{r}
-# combine `females_df` and `males_df` and reassign to `df` dataframe
+# combine `females_df` and `males_df` and reassign to `df`
 df <- rbind(females_df, males_df)
 ```
 
-**Task 4B:** Plot in one graph the difference in the number of cases for the first available month in the data set for all sexes.
+\newpage
+
+##### **Plot 2A**
 
 ```{r, fig.align = "center"}
 # plot the difference in positive cases in the first month, April, for both sexes
@@ -341,7 +258,9 @@ plotting(df, 4, "difference", "Daily Fluctuations in Positive Cases",
          "in the month of April", "Difference")
 ```
 
-**Task 4C:** Plot in one graph the difference in the number of cases for the last available month in the data set for all sexes.
+\newpage
+
+##### **Plot 2B**
 
 ```{r, fig.align = "center"}
 # plot the difference in positive cases in the last month, October, for both sexes
@@ -349,12 +268,12 @@ plotting(df, 10, "difference", "Daily Fluctuations in Positive Cases",
          "in the month of October", "Difference")
 ```
 
+\newpage
+
+##### **Plot 2C**
+
 ```{r, fig.align = "center"}
 # plot the difference in positive cases in all months, April to October, for both sexes
 facet_plotting(df, "difference", "Daily Fluctuations in Positive Cases", 
                "from April to October", "Difference")
 ```
-
-**Task 4 Observations:** Although there are some instances where one sex had a larger difference than the other, both experienced very similar fluctuations in positive cases, whether that be in April or October. However, it does appear that female have larger differences than males more often. Similar to Task 3, this may indicate a larger problem in society that's resulting in the disproportionatlity.
-
-
