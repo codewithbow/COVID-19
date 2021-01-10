@@ -23,7 +23,9 @@ For this ultra-mini project, I want to:
 The below tasks are not intended to provide extensive knowledge into the
 subject matter, rather they simply showcase a glimpse into the general
 picture of the data; the observations provided for each task are meant
-to be rudimentary. All in all, this exercise is done for fun and to gain
+to be rudimentary. 
+
+All in all, this exercise is done for fun and to gain
 some new knowledge.
 
 Thank you to [California Open Data](https://data.ca.gov/) for the data.
